@@ -1,0 +1,37 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Stream {
+  id               String      @id @default(cuid())
+  userAddress      String
+  ratePerSecond    Float
+  deposit          Float
+  totalStreamed    Float       @default(0)
+  status           String      @default("PENDING") // PENDING | ACTIVE | CLOSED
+  mode             String      @default("demo")    // demo | chain
+  contractStreamId Int?
+  txHash           String?
+  createdAt        DateTime    @default(now())
+  activatedAt      DateTime?
+  closedAt         DateTime?
+  offsets          OffsetLog[]
+
+  @@index([userAddress])
+}
+
+model OffsetLog {
+  id            String   @id @default(cuid())
+  streamId      String
+  stream        Stream   @relation(fields: [streamId], references: [id], onDelete: Cascade)
+  carbonKgSaved Float
+  usdcAmount    Float    @default(0)
+  timestamp     DateTime @default(now())
+
+  @@index([streamId])
+}
